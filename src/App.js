@@ -1,26 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import { Provider } from 'react-redux';
+import { store, persistor } from './redux/createStore';
+import { PersistGate } from 'redux-persist/integration/react'
+import { BrowserRouter as Router } from 'react-router-dom';
+// COMPONENTS
+import Navigation from './react/components/Navigation';
+// MATERIAL UI 
+import { ThemeProvider } from '@material-ui/core/styles';
+import { createMuiTheme } from '@material-ui/core/styles';
+import deepPurple from '@material-ui/core/colors/deepPurple';
+import grey from '@material-ui/core/colors/grey';
 
-function App() {
+const theme = createMuiTheme({
+  palette: {
+    primary: deepPurple,
+    secondary: grey,
+  },
+});
+
+const App = () => {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <Router>
+            <div className="App">  
+              <Navigation/>
+            </div>
+          </Router>
+        </PersistGate>
+      </Provider>
+    </ThemeProvider>
   );
 }
 
 export default App;
+
+
