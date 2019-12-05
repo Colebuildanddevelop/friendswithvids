@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useVisitorCollection, useAuth } from '../../hooks';
+import { useAuth } from '../../hooks';
 import * as firebase from 'firebase';
 // MATERIAL UI
 import { makeStyles } from '@material-ui/core/styles';
@@ -12,10 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Container from '@material-ui/core/Container';
-import Divider from '@material-ui/core/Divider';
+
 
 
 const useStyles = makeStyles(theme => ({

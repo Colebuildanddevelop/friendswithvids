@@ -8,8 +8,6 @@ import { Route, Switch } from 'react-router-dom';
 import { handleVisitor } from '../../redux/actions';
 // COMPONENTS
 import NavBar from './NavBar';
-import SignInScreen from './SignInUpdate';
-import Room from './room/Main';
 import Footer from './Footer';
 import VideoPlayer from './room/VideoPlayer';
 // MATERIAL UI
@@ -20,17 +18,30 @@ import Container from '@material-ui/core/Container';
 
 const useStyles = makeStyles(theme => ({
   mainBackground: {
-    backgroundColor: '#2f2f2f',
+    backgroundColor: '#2B2B2C',
     marginTop: 56,
     marginRight: 0,
     marginLeft: 0,
     maxWidth: '100%',
     padding: 10,
+    [theme.breakpoints.down('xs')]: {
+      paddingTop: 0
+    }
   }
-}))
+}));
 
+/***
+ * Main app component
+ *   - keeps a visitor count
+ *   - HOC for
+ *     - VideoPlayer
+ *     - NavBar
+ *     - Footer
+ * 
+ ***/ 
 const Navigation = (props) => {
   const classes = useStyles();
+  // get visitorData via react hook, 
   const visitorRef = firebase.firestore().collection('visitors');
   const { isVisitorsLoading, visitorData } = useVisitorCollection(visitorRef);  
 
@@ -90,10 +101,6 @@ const Navigation = (props) => {
         <Container className={classes.mainBackground}>
           <NavBar />
           <Switch>
-            <Route
-              path='/signIn'
-              render={(() => <SignInScreen/>)}
-            />
             <Route
               exact path='/'
               render={() => <VideoPlayer/>}

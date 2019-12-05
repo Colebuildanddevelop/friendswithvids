@@ -2,11 +2,13 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 // COMPONENTS
 import SignInScreen from './SignInUpdate';
+import Leaderboard from './Leaderboard'
 // MATERIAL-UI
 import AppBar from '@material-ui/core/AppBar';
 import MenuIcon from '@material-ui/icons/Menu';
 import LocalMallOutlinedIcon from '@material-ui/icons/LocalMallOutlined';
 import IconButton from '@material-ui/core/IconButton';
+import ViewListIcon from '@material-ui/icons/ViewList';
 import Slide from '@material-ui/core/Slide';
 import useScrollTrigger from '@material-ui/core/useScrollTrigger';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -47,7 +49,8 @@ const NavBar = () => {
       <HideOnScroll>
         <AppBar className={classes.appBar} elevation={1}>
           <Toolbar >
-            <Typography variant="h5" align="left" className={classes.title}>
+            <Leaderboard />
+            <Typography variant="h6" align="center" className={classes.title}>
               <NavLink style={{ textDecoration: 'none', color: 'unset' }} to="/" color="inherit">
                 Friends with Vids
               </NavLink>  

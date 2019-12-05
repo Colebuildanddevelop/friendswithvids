@@ -9,21 +9,15 @@ import Chat from './Chat';
 // MATERIAL UI
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import IconButton from '@material-ui/core/IconButton';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 import ThumbUpRoundedIcon from '@material-ui/icons/ThumbUpRounded';
 import ThumbDownRoundedIcon from '@material-ui/icons/ThumbDownRounded';
 import Button from '@material-ui/core/Button';
 import red from '@material-ui/core/colors/red';
-import Fab from '@material-ui/core/Fab';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -81,18 +75,16 @@ const useStyles = makeStyles(theme => ({
 
 
 // TODO skip()
-const VideoPlayer = (props) => {
+const VideoPlayer = () => {
 
   const classes = useStyles();
   
   // clsx classes
   const [thumbsUpClicked, setThumbsUpClicked] = useState(false);
   const [thumbsDownClicked, setThumbsDownClicked] = useState(false);
-
   const thumbsUp = clsx({ [classes.thumbsUpActivated]: thumbsUpClicked })  
-  const thumbsDown = clsx({ [classes.thumbsDownActivated]: thumbsDownClicked})
-
-
+  const thumbsDown = clsx({ [classes.thumbsDownActivated]: thumbsDownClicked })
+  
   const { isAuthLoading, user } = useAuth(firebase.auth());  
   const [videoIdInput, setVideoIdInput] = useState();
   const [player, setPlayer] = useState();
@@ -102,15 +94,23 @@ const VideoPlayer = (props) => {
     djList: [],
     isLoading: true
   });
+  const [playerState, setPlayerState] = useState({
+    playerTime: 0,
+    videoDuration: 0,
+    playlistIndex: 0,
+    votesToSkip: 0,
+  });
   const [currDj, setCurrDj] = useState();
   const [playerTime, setPlayerTime] = useState();
   const [videoDuration, setVideoDuration] = useState();
   const [playlistIndex, setPlaylistIndex] = useState(0);
   const [votesToSkip, setVotesToSkip] = useState(0);
-  const visitorRef = firebase.firestore().collection('visitors').where('isActive', '==', true);
-  const userRef = firebase.firestore().collection('users')
-  const { isVisitorsLoading, visitorData } = useVisitorCollection(visitorRef);
-  const { isCollectionLengthLoading, collectionLength } = useCollectionLength(userRef)
+  const visitorRef = firebase.firestore().collection('visitors');
+  const userRef = firebase.firestore().collection('users').where('isActive', '==', true);
+  const { isVisitorsLoading, visitorData, numOfVisitors } = useVisitorCollection(visitorRef);
+  const { isCollectionLengthLoading, collectionLength } = useCollectionLength(userRef);
+
+
 
   useEffect(() => {   
     console.log(player)
@@ -493,7 +493,7 @@ const VideoPlayer = (props) => {
           </Grid>
           <Grid item xs={6}>
             <Typography align='right' style={{fontWeight: 'lighter', color: 'white'}}>
-              viewers : {collectionLength}
+              viewers : {numOfVisitors}
             </Typography>           
           </Grid>    
         </Grid>
@@ -537,6 +537,60 @@ const VideoPlayer = (props) => {
             </Grid>
           </Grid>
           <Grid item container xs={12} spacing={2} style={{margin: 'auto'}}>    
+            {currDj === undefined && 
+              <React.Fragment >
+                <Typography align='left' style={{width: '50%', display: 'inline', color: 'white', fontWeight: 'lighter'}}>
+                  current dj
+                </Typography>        
+              
+                <Card className={classes.currentDj}>
+                  
+                  <Grid item container xs={12} style={{padding: 10}}>
+                    <Grid item container direction='column' xs={4} >
+                      <Grid item style={{margin: 'auto'}}>
+                        <Avatar alt='reputation' style={{backgroundColor: '#670f94', color: 'white'}}>
+                          0  
+                        </Avatar>                  
+                      </Grid>
+                      <Grid item >
+                        <Typography align='center' style={{color: 'white'}}>
+                          reputation               
+                        </Typography>                  
+                      </Grid>                
+                    </Grid>                  
+                    <Grid item container direction='column' xs={4} >
+                      <Grid item style={{margin: 'auto'}}>
+                        <Avatar
+                          alt='avatar' 
+                          src='http://world-of-cliparts.com/images2/rage/2/kisspng-trollface-youtube-roblox-5b0c5c1e825201.1123392115275366705338.jpg'                         
+                        />                  
+                      </Grid>
+                      <Grid item >
+                        <Typography align='center' style={{fontWeight: 'bold', color: 'white'}}>
+                          current dj               
+                        </Typography>                  
+                      </Grid>                
+                    </Grid>
+                    <Grid item xs={2} style={{padding: 8}}>
+                      <IconButton
+                        onClick={handleThumbsUp}
+                      >
+                        <ThumbUpRoundedIcon className={thumbsUp}/>
+                      </IconButton>                      
+                    </Grid>
+                    <Grid item xs={2} style={{padding: 8}}>
+                      <IconButton    
+                        onClick={voteToSkip}             
+                      >
+                        <ThumbDownRoundedIcon className={thumbsDown}/>
+                      </IconButton>
+                    </Grid>
+                    
+                  </Grid>
+                </Card>      
+                     
+              </React.Fragment>                       
+            }
             {(currDj !== undefined && (playlistIndex + 1) <= playlistData.playlistLength) && 
               <React.Fragment >
                 <Typography align='left' style={{width: '50%', display: 'inline', color: 'white', fontWeight: 'lighter'}}>

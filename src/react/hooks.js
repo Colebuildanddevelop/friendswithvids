@@ -9,13 +9,16 @@ export const useVisitorCollection = (ref) => {
 
   useEffect(() => {
     return ref.onSnapshot(docs => {
-      let update = []
+      let update = [];
+      let counter = 0;
       docs.forEach(doc => {
         update.push(doc.data())
+        counter += 1;
       })
       setDocState({
         isVisitorLoading: false,
-        visitorData: update      
+        visitorData: update,
+        numOfVisitors: counter      
       });
     });
   }, []);

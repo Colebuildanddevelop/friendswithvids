@@ -25,7 +25,7 @@ const App = () => {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <Router>
-            <div className="App">  
+            <div className="App" style={{backgroundColor: '#2B2B2C'}}>  
               <Navigation/>
             </div>
           </Router>
