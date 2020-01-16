@@ -69,6 +69,7 @@ const SignInScreen = () => {
   useEffect(() => {
     if (user !== null) {
       let userInDb = false;
+      // find current user
       firebase.firestore().collection('users')
         .get()
         .then(querySnapshot => {
@@ -82,6 +83,7 @@ const SignInScreen = () => {
               })
             }          
           })
+          // if could not find current user
           if (userInDb !== true) {
             // change users profile picture to the default
             firebase.auth().currentUser.updateProfile({
@@ -101,22 +103,15 @@ const SignInScreen = () => {
               isActive: true,
             });
           } else {
+            console.log('updating user')
             // user is in database, update user information
             let currentTime = firebase.firestore.Timestamp.now().seconds;            
             firebase.firestore().collection('users').where('uid', '==', user.uid)
             .get()
             .then(querySnapshot => {
               querySnapshot.forEach(doc => {
-                doc.ref.update({
-                  displayName: user.displayName,
-                  photoUrl: user.photoURL,
-                  uid: user.uid,
-                  votedToSkip: false,
-                  upVotedDj: false,      
-                  upVotedPlaylistIndex: null,        
-                  rep: 0,        
+                doc.ref.update({      
                   lastSeen: currentTime, 
-                  isActive: true,
                 })
               })
             })

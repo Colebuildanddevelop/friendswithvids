@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
   },
   youtubePlayer: {   
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('lg')]: {
       height: 800
     },
     height: 200,
@@ -103,7 +103,7 @@ const VideoPlayer = () => {
   const [currDj, setCurrDj] = useState();
   const [playerTime, setPlayerTime] = useState();
   const [videoDuration, setVideoDuration] = useState();
-  const [playlistIndex, setPlaylistIndex] = useState(0);
+  const [playlistIndex, setPlaylistIndex] = useState(null);
   const [votesToSkip, setVotesToSkip] = useState(0);
   const visitorRef = firebase.firestore().collection('visitors');
   const userRef = firebase.firestore().collection('users').where('isActive', '==', true);
@@ -150,22 +150,26 @@ const VideoPlayer = () => {
         })
         setVotesToSkip(countedVotes)      
       });    
-    // count how many users have upvoted the current dj and listen    
-    firebase.firestore().collection('users').where('upVotedDj', '==', true)
-      .get()
-      .then(querySnapshot => {       
-        querySnapshot.forEach(doc => {          
-          if (doc.data().upVotedPlaylistIndex !== playlistIndex) {
-            console.log('resetting user upvotes')
-            console.log(doc.data().upVotedPlaylistIndex)
-            console.log(playlistIndex)
-            doc.ref.update({
-              upVotedDj: false,
-              upVotedPlaylistIndex: null,
-            })
-          }          
-        })    
-      }); 
+
+    if ( playlistIndex !== null) {
+      // count how many users have upvoted the current dj and listen    
+      firebase.firestore().collection('users').where('upVotedDj', '==', true)
+        .get()
+        .then(querySnapshot => {       
+          querySnapshot.forEach(doc => {          
+            if (doc.data().upVotedPlaylistIndex !== playlistIndex) {
+              console.log('resetting user upvotes')
+              console.log(doc.data().upVotedPlaylistIndex)
+              console.log(playlistIndex)
+              doc.ref.update({
+                upVotedDj: false,
+                upVotedPlaylistIndex: null,
+              })
+            }          
+          })    
+        }); 
+    }
+
     if (player !== undefined) {
       player.cuePlaylist(playlistData.playlist, playlistIndex)
     }     

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import * as firebase from 'firebase';
-
 // MATERIAL UI
 import { makeStyles } from '@material-ui/core/styles';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
@@ -26,7 +25,6 @@ const useStyles = makeStyles({
     minHeight: 500,
     overflow: 'hidden',
   },
-
 });
 
 /**
@@ -56,7 +54,6 @@ const Leaderboard = () => {
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }  
-    console.log(leaderboardList)
     setState({bottom: open});
   };    
   
@@ -85,7 +82,6 @@ const Leaderboard = () => {
               Top Friends  
             </Typography>              
           </Paper>
-
           <List>
             {leaderboardList.map((leader, index) => (
               <div>
@@ -93,7 +89,6 @@ const Leaderboard = () => {
                   <ListItemText
                     primary={(index + 1) + '.'} 
                     style={{paddingRight: 20, flexGrow: 0}}	
-                    
                   />
                   <ListItemAvatar>
                     <Avatar 
@@ -103,9 +98,8 @@ const Leaderboard = () => {
                   </ListItemAvatar>
                   <ListItemText primary={leader.displayName} /> 
                   <ListItemText primary={'rep: ' + leader.rep} style={{flexGrow: 0}} /> 
-  
                 </ListItem>  
-                <Divider style={{color: 'white', backgroundColor: 'white'}} />
+                <Divider style={{color: 'white', backgroundColor: 'white', height: 5}} />
               </div>              
             ))}
           </List>
