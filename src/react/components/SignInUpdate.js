@@ -35,7 +35,13 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const SignInScreen = (props) => {
+
+/**
+ * @desc handles all operations related to signing in/out, and changing user profile settings
+ * @param 
+ * @returns 
+ */
+const SignInScreen = () => {
   const classes = useStyles();
   const { isAuthLoading, user } = useAuth(firebase.auth());
   const [open, setOpen] = useState(false);
@@ -59,7 +65,7 @@ const SignInScreen = (props) => {
       signInSuccessWithAuthResult: () => false
     }
   };  
-
+  // handles user sessions, also assigns defaults for first signed in users
   useEffect(() => {
     if (user !== null) {
       let userInDb = false;
@@ -157,9 +163,8 @@ const SignInScreen = (props) => {
   const handleCancelSettings = () => {
     setSettingsEnabled(false)
     setAnchorEl(null);
-
   }
-
+  // allows users to save their profile changes
   const handleSaveSettings = async () => {
     await firebase.auth().currentUser.updateProfile({
       displayName: userName,
@@ -170,7 +175,7 @@ const SignInScreen = (props) => {
     })
     handleCancelSettings()
   }
-
+  // allows users to delete their account
   const handleDeleteAccount = async () => {
     let result = window.confirm("are you sure you'd like to do this?")
     if (result === true) {
@@ -197,7 +202,7 @@ const SignInScreen = (props) => {
       setOpen(false);
     }
   }
-
+  // if a user is not detected, display the sign in button, else show the player avatar and expose profile settings 
   if (!user) {
     return (
       <React.Fragment>

@@ -29,11 +29,16 @@ const useStyles = makeStyles({
 
 });
 
+/**
+ * @desc displays a leaderboard filtered from the top upvoted djs most to least
+ * @params null
+ * @returns Leaderboard Component
+ */
 const Leaderboard = () => {      
   const classes = useStyles();
   const [state, setState] = useState({bottom: false});
   const [leaderboardList, setLeaderboardList] = useState([])
-
+  // fetches the current rep of all the users 
   useEffect(() => {
     let updatedList = [];
     setLeaderboardList([])
@@ -55,8 +60,6 @@ const Leaderboard = () => {
     setState({bottom: open});
   };    
   
-
-
   return (
     <div>
       <IconButton>
@@ -103,10 +106,7 @@ const Leaderboard = () => {
   
                 </ListItem>  
                 <Divider style={{color: 'white', backgroundColor: 'white'}} />
-              </div>
-
-
-              
+              </div>              
             ))}
           </List>
         </div>

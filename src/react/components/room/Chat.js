@@ -13,8 +13,6 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
 
-
-
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
@@ -26,13 +24,11 @@ const useStyles = makeStyles(theme => ({
     overflow: 'auto',
     [theme.breakpoints.down('xs')]: {
       maxHeight: 300,
-    },
-    
+    },    
     [theme.breakpoints.up('lg')]: {
       maxHeight: 400,
       minHeight: 400,
     },
-
   },
   inputLabel: {
     color: 'white',
@@ -50,11 +46,15 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+/**
+ * @desc displays chat history, exposes chat functionality
+ * @params null
+ * @returns Chat Component
+ */
 const Chat = () => {
   const classes = useStyles();  
   const chatDisplayRef = useRef(null);
   const { isAuthLoading, user } = useAuth(firebase.auth());  
-
   const [messages, addMessage] = useState([]);
   const [message, setMessage] = useState('')
 
@@ -68,9 +68,9 @@ const Chat = () => {
       })
       addMessage(updatedMessages)
     });  
-    // scroll to bottom of chat window
-  }, []);  
+  }, []);
 
+  // scroll to bottom of chat window
   useEffect(() => {chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight}, [messages])
 
   // sends message
@@ -94,7 +94,6 @@ const Chat = () => {
   
   return (
     <React.Fragment>
-
       <Paper style={{width: '100%', height: 40, marginBottom: 10, backgroundColor: '#673ab7'}}>
         <Typography variant='h6' align='center' style={{color: 'white'}}>
           chat
@@ -102,17 +101,15 @@ const Chat = () => {
       </Paper>
       <Grid container item spacing={2} className={classes.root}>
         <Grid container item xs={12} className={classes.chatDisplay} id='chat-display' ref={chatDisplayRef}>
-          {messages.map(message => (
-            
+          {messages.map(message => (            
             <Card className={classes.message}>
               <Grid container xs={12}  direction='row'>
-                <Grid item xs={2}>
-                  <Avatar
-                    alt='avatar'
-                    src={message.photoURL}
-                  />
-                </Grid>
-                <Grid item xs={9}>
+                <Avatar
+                  alt='avatar'
+                  src={message.photoURL}
+                  style={{margin: 10}}
+                />
+                <Grid item>
                   <Typography style={{fontWeight: 'bold'}}>
                     {message.name}
                   </Typography>                
@@ -121,15 +118,13 @@ const Chat = () => {
                   </Typography> 
                 </Grid>                
               </Grid>
-            </Card >
-              
+            </Card >              
           ))}
         </Grid>
         <Grid item xs={12}>
           <TextField
             fullWidth={true}
-            multiline={true}
-            
+            multiline={true}            
             variant="outlined"
             type='text'
             label="chat here..."
@@ -154,8 +149,7 @@ const Chat = () => {
             }}
           />
         </Grid>
-      </Grid>
-  
+      </Grid>  
     </React.Fragment>
   )  
 }

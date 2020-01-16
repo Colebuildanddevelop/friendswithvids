@@ -23,13 +23,11 @@ const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
   },
-  youtubePlayer: {
-    [theme.breakpoints.down('xs')]: {
-      height: 200
-    },    
-    [theme.breakpoints.up('md')]: {
+  youtubePlayer: {   
+    [theme.breakpoints.up('sm')]: {
       height: 800
     },
+    height: 200,
     width: '100%',
   },
   videoInput: {
@@ -48,11 +46,12 @@ const useStyles = makeStyles(theme => ({
       paddingLeft: 10,
     },
   }, 
-  syncButton: {
-    
-    [theme.breakpoints.down('lg')]: {
-      paddingRight: 10,
-      margin: 'auto',
+  syncButton: {    
+    paddingTop: 10,
+    paddingRight: 10,
+    [theme.breakpoints.up('lg')]: {
+      paddingRight: 0,
+      paddingTop: 0
     }
   },
   currentDj: {
@@ -74,17 +73,18 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-// TODO skip()
+/**
+ * @desc displays the currenty queued video, and dj. Exposes controls for queuing, syncing, and voting. Communicates with DB to track session information.
+ * @params null
+ * @returns VideoPlayer component
+ */
 const VideoPlayer = () => {
-
   const classes = useStyles();
-  
   // clsx classes
   const [thumbsUpClicked, setThumbsUpClicked] = useState(false);
   const [thumbsDownClicked, setThumbsDownClicked] = useState(false);
   const thumbsUp = clsx({ [classes.thumbsUpActivated]: thumbsUpClicked })  
   const thumbsDown = clsx({ [classes.thumbsDownActivated]: thumbsDownClicked })
-  
   const { isAuthLoading, user } = useAuth(firebase.auth());  
   const [videoIdInput, setVideoIdInput] = useState();
   const [player, setPlayer] = useState();
@@ -109,11 +109,10 @@ const VideoPlayer = () => {
   const userRef = firebase.firestore().collection('users').where('isActive', '==', true);
   const { isVisitorsLoading, visitorData, numOfVisitors } = useVisitorCollection(visitorRef);
   const { isCollectionLengthLoading, collectionLength } = useCollectionLength(userRef);
-
-
-
+  
+  // maintains video state
   useEffect(() => {   
-    console.log(player)
+    // get the current playlist 
     firebase.firestore().collection('playlist').orderBy('timestamp', 'asc')
       .onSnapshot(snapshot => {
         let playlistLength = 0;
@@ -131,6 +130,7 @@ const VideoPlayer = () => {
           isLoading: false
         });
       });
+    // get the video information to know how to sync the video  
     firebase.firestore().collection('sessionInfo').doc('sessionTimes')
       .onSnapshot(doc => {
         if (doc.data().timeStarted === 0) {
@@ -141,6 +141,7 @@ const VideoPlayer = () => {
         setVideoDuration(doc.data().videoDuration)
         setPlaylistIndex(doc.data().playlistIndex)
       });     
+    // count how many users have voted to skip, and listen
     firebase.firestore().collection('users').where('votedToSkip', '==', true)
       .onSnapshot(snapshot => {  
         let countedVotes = 0;      
@@ -148,14 +149,12 @@ const VideoPlayer = () => {
           countedVotes += 1
         })
         setVotesToSkip(countedVotes)      
-      }); 
-
-      
+      });    
+    // count how many users have upvoted the current dj and listen    
     firebase.firestore().collection('users').where('upVotedDj', '==', true)
       .get()
       .then(querySnapshot => {       
-        querySnapshot.forEach(doc => {
-          
+        querySnapshot.forEach(doc => {          
           if (doc.data().upVotedPlaylistIndex !== playlistIndex) {
             console.log('resetting user upvotes')
             console.log(doc.data().upVotedPlaylistIndex)
@@ -174,18 +173,21 @@ const VideoPlayer = () => {
     setThumbsDownClicked(false)
     setThumbsUpClicked(false)             
   }, [playlistIndex])
-
+  // is called when the youtube iframe is loaded
   const onReady = (event) => {
     console.log(playlistData.playlist) 
     setPlayer(event.target) 
     event.target.cuePlaylist(playlistData.playlist, playlistIndex)
   }
 
+  // tracks the state of the video player and then takes the appropriate action
   const onStateChange = (event) => {
     // if video state changes to playing, play from current time in playlist, if no current time create the state
     // need to keep track of the index of the play list currently on
     // track start time initial, duration of video, if video over, then change set index to start from. 
+
     switch (event.data) {
+      // video has ended, check to see if its time for the next video, if not play where it should be played from
       case 0: {
         let currentTime = firebase.firestore.Timestamp.now().seconds;            
         let videoExpires = playerTime + videoDuration            
@@ -203,8 +205,10 @@ const VideoPlayer = () => {
         }
         break;
       }   
+      // if the video is playing, 
       case 1: {
-        // dangerous if someone is able to skip and get the next video to play?  
+        // if current played video !== the duration of the video in the db, then update the time
+        // should only be true if case 0 was triggered and the current time was passed the time the video started + the videos duration
         if (videoDuration !== event.target.getDuration()) {
           firebase.firestore().collection('sessionInfo').doc('sessionTimes').set({
             videoDuration: event.target.getDuration()
@@ -225,14 +229,19 @@ const VideoPlayer = () => {
         setCurrVidTitle(event.target.getVideoData().title)
         break;
       }
+      // if the video is buffered
       case 5: {
-        // should be  0 if hasnt begun, or ended after vid expiry, or started(queued) after vid expiry, vid expiry = player time + video duration(set on video play....)
+        // should be  0 if hasnt begun, or ended after vid expiry, or started(queued) after vid expiry
+        // if 0 play the video and set the time started
         if (playerTime === 0) {
           event.target.playVideo();
           console.log('setting time')
           firebase.firestore().collection('sessionInfo').doc('sessionTimes').set({
             timeStarted: firebase.firestore.FieldValue.serverTimestamp(),
           }, {merge: true});
+        // check to see if enough time has passed to skip the video (video duration + time started > current time)
+        // if so set the next video
+        // else play from where the video should be played from
         } else {
           let currentTime = firebase.firestore.Timestamp.now().seconds;            
           let videoExpires = playerTime + videoDuration  
@@ -255,7 +264,7 @@ const VideoPlayer = () => {
     }
   }
 
-  // TODO show confirmation, and play a video if its first queued, or play video if the playlist has ran out...  
+  // TODO show confirmation
   const addToQueue = (videoUrl) => {
     if (!user) {
       alert('please sign in before using the playlist!')
@@ -308,7 +317,7 @@ const VideoPlayer = () => {
       }
     }
   }
-
+  // allows users to upvote the current dj
   const handleThumbsUp = async () => {
     if (!user) {
       alert('please sign in before giving respect')
@@ -384,6 +393,7 @@ const VideoPlayer = () => {
     }        
   }
 
+  // allows users to vote to skip the current playing video, if 2/3 of the voting population 
   const voteToSkip = async () => {
     if (!user) {
       alert('please sign in before voting to skip')
@@ -424,6 +434,7 @@ const VideoPlayer = () => {
         });
         setThumbsDownClicked(true);
         console.log('user voted to skip');   
+        // if enough votes then skip
         let voteThreshold = ((collectionLength / 3) * 2);
         let updatedVotesToSkip = votesToSkip + 1; 
         if (updatedVotesToSkip > voteThreshold) {
@@ -503,7 +514,7 @@ const VideoPlayer = () => {
             <Button
              variant='contained'
              onClick={() => player.cuePlaylist(playlistData.playlist, playlistIndex)}
-             style={{color: red[500], backgroundColor: '#636363', width: '100%', height: 75, fontWeight: 'bold', fontSize: 17}}
+             style={{color: red[500], backgroundColor: '#636363', display: 'block', minHeight: '100%', width: '100%', fontWeight: 'bold', fontSize: 17}}
             >
               sync
             </Button> 
@@ -541,54 +552,12 @@ const VideoPlayer = () => {
               <React.Fragment >
                 <Typography align='left' style={{width: '50%', display: 'inline', color: 'white', fontWeight: 'lighter'}}>
                   current dj
-                </Typography>        
-              
-                <Card className={classes.currentDj}>
-                  
-                  <Grid item container xs={12} style={{padding: 10}}>
-                    <Grid item container direction='column' xs={4} >
-                      <Grid item style={{margin: 'auto'}}>
-                        <Avatar alt='reputation' style={{backgroundColor: '#670f94', color: 'white'}}>
-                          0  
-                        </Avatar>                  
-                      </Grid>
-                      <Grid item >
-                        <Typography align='center' style={{color: 'white'}}>
-                          reputation               
-                        </Typography>                  
-                      </Grid>                
-                    </Grid>                  
-                    <Grid item container direction='column' xs={4} >
-                      <Grid item style={{margin: 'auto'}}>
-                        <Avatar
-                          alt='avatar' 
-                          src='http://world-of-cliparts.com/images2/rage/2/kisspng-trollface-youtube-roblox-5b0c5c1e825201.1123392115275366705338.jpg'                         
-                        />                  
-                      </Grid>
-                      <Grid item >
-                        <Typography align='center' style={{fontWeight: 'bold', color: 'white'}}>
-                          current dj               
-                        </Typography>                  
-                      </Grid>                
-                    </Grid>
-                    <Grid item xs={2} style={{padding: 8}}>
-                      <IconButton
-                        onClick={handleThumbsUp}
-                      >
-                        <ThumbUpRoundedIcon className={thumbsUp}/>
-                      </IconButton>                      
-                    </Grid>
-                    <Grid item xs={2} style={{padding: 8}}>
-                      <IconButton    
-                        onClick={voteToSkip}             
-                      >
-                        <ThumbDownRoundedIcon className={thumbsDown}/>
-                      </IconButton>
-                    </Grid>
-                    
-                  </Grid>
-                </Card>      
-                     
+                </Typography>                      
+                <Card className={classes.currentDj} style={{minHeight: 100, backgroundColor: '#636363'}}>
+                  <Typography align='center' style={{color: 'white', margin: 20}}>
+                    there is no current dj, add a video!
+                  </Typography>
+                </Card>                           
               </React.Fragment>                       
             }
             {(currDj !== undefined && (playlistIndex + 1) <= playlistData.playlistLength) && 

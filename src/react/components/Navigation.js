@@ -37,7 +37,6 @@ const useStyles = makeStyles(theme => ({
  *     - VideoPlayer
  *     - NavBar
  *     - Footer
- * 
  ***/ 
 const Navigation = (props) => {
   const classes = useStyles();
@@ -46,7 +45,12 @@ const Navigation = (props) => {
   const { isVisitorsLoading, visitorData } = useVisitorCollection(visitorRef);  
 
   useEffect(() => {
-    // non sign in visitor states : no uuid (x); uuid locally, but not in db(); uuid locally, and in db();
+    /**
+     * non sign in visitor states: 
+     * - no uuid (x);
+     * - uuid locally, but not in db(); 
+     * - uuid locally, and in db();
+     **/ 
     // check if visitor has uid locally
     if (props.uid !== '') { 
       let inDb = false;  
@@ -79,7 +83,6 @@ const Navigation = (props) => {
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
   }    
-
   const generateUserData = async () => {
     // generate uuid add to db and local storage 
     let uuid = uuidv4()
@@ -93,7 +96,6 @@ const Navigation = (props) => {
       console.error('error', err);
     })          
   }  
-  
   return (
     <div>
       <React.Fragment>
@@ -127,9 +129,3 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps,
 )(Navigation);
-
-/***
-
-<VideoPlayer />
-
- ***/
